@@ -919,12 +919,11 @@ actions:
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set mode = 1 if is_state(entity, 'off') else 2 %}
                         {% set hvac_action = state_attr(entity, 'hvac_action') %}
-                        {% set heat_color = 'FF9800' if mode != 1 and hvac_action == 'heating' else '4CAF50' %}
-                        {% set target_text = (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '' %}
+                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
-                          'text': ('#' ~ heat_color ~ ' ' ~ target_text ~ '#') if target_text != '' else '',
+                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
@@ -1085,12 +1084,11 @@ actions:
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set mode = 1 if is_state(entity, 'off') else 2 %}
                         {% set hvac_action = state_attr(entity, 'hvac_action') %}
-                        {% set heat_color = 'FF9800' if mode != 1 and hvac_action == 'heating' else '4CAF50' %}
-                        {% set target_text = (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '' %}
+                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
-                          'text': ('#' ~ heat_color ~ ' ' ~ target_text ~ '#') if target_text != '' else '',
+                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
@@ -1458,12 +1456,11 @@ actions:
                         {% set target_units = '°C' if target_temp is not none and mode != 1 else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set hvac_action = state_attr(matched_entity, 'hvac_action') %}
-                        {% set heat_color = 'FF9800' if mode != 1 and hvac_action == 'heating' else '4CAF50' %}
-                        {% set target_text = (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '' %}
+                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
-                          'text': ('#' ~ heat_color ~ ' ' ~ target_text ~ '#') if target_text != '' else '',
+                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
@@ -1663,12 +1660,11 @@ actions:
                         {% set target_units = '°C' if target_temp is not none and mode != 1 else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set hvac_action = state_attr(matched_entity, 'hvac_action') %}
-                        {% set heat_color = 'FF9800' if mode != 1 and hvac_action == 'heating' else '4CAF50' %}
-                        {% set target_text = (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '' %}
+                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
-                          'text': ('#' ~ heat_color ~ ' ' ~ target_text ~ '#') if target_text != '' else '',
+                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
