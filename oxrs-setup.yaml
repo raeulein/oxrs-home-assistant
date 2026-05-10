@@ -288,8 +288,8 @@ blueprint:
             entity:
         page_5_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
 
-mode: queued
-max: 10
+mode: parallel
+max: 20
 
 trigger_variables:
   device_client_id: !input device_client_id
@@ -918,12 +918,9 @@ actions:
                         {% set target_units = '°C' if target_temp is not none and not is_state(entity, 'off') else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set mode = 1 if is_state(entity, 'off') else 2 %}
-                        {% set hvac_action = state_attr(entity, 'hvac_action') %}
-                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
-                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
@@ -1083,12 +1080,9 @@ actions:
                         {% set target_units = '°C' if target_temp is not none and not is_state(entity, 'off') else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set mode = 1 if is_state(entity, 'off') else 2 %}
-                        {% set hvac_action = state_attr(entity, 'hvac_action') %}
-                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
-                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
@@ -1357,22 +1351,32 @@ actions:
                           - condition: template
                             value_template: "{{ thermostat_mode | int(1) in [0, 1] }}"
                         sequence:
-                          - action: climate.set_hvac_mode
-                            continue_on_error: true
-                            target:
-                              entity_id: "{{ matched_entity }}"
-                            data:
-                              hvac_mode: "off"
-                          - action: climate.turn_off
-                            continue_on_error: true
-                            target:
-                              entity_id: "{{ matched_entity }}"
+                          - choose:
+                              - conditions:
+                                  - condition: template
+                                    value_template: "{{ not is_state(matched_entity, 'off') }}"
+                                sequence:
+                                  - action: climate.set_hvac_mode
+                                    continue_on_error: true
+                                    target:
+                                      entity_id: "{{ matched_entity }}"
+                                    data:
+                                      hvac_mode: "off"
+                                  - action: climate.turn_off
+                                    continue_on_error: true
+                                    target:
+                                      entity_id: "{{ matched_entity }}"
                     default:
-                      - action: climate.set_hvac_mode
-                        target:
-                          entity_id: "{{ matched_entity }}"
-                        data:
-                          hvac_mode: "{{ hvac_on_mode | trim }}"
+                      - choose:
+                          - conditions:
+                              - condition: template
+                                value_template: "{{ is_state(matched_entity, 'off') }}"
+                            sequence:
+                              - action: climate.set_hvac_mode
+                                target:
+                                  entity_id: "{{ matched_entity }}"
+                                data:
+                                  hvac_mode: "{{ hvac_on_mode | trim }}"
                       - action: climate.set_temperature
                         target:
                           entity_id: "{{ matched_entity }}"
@@ -1455,12 +1459,9 @@ actions:
                         {% set mode = 1 if (mode | int(1)) in [0, 1] else 2 %}
                         {% set target_units = '°C' if target_temp is not none and mode != 1 else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
-                        {% set hvac_action = state_attr(matched_entity, 'hvac_action') %}
-                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
-                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
@@ -1659,12 +1660,9 @@ actions:
                         {% set mode = 1 if changed_state == 'off' else 2 %}
                         {% set target_units = '°C' if target_temp is not none and mode != 1 else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
-                        {% set hvac_action = state_attr(matched_entity, 'hvac_action') %}
-                        {% set heat_color = {'r': 255, 'g': 152, 'b': 0} if mode != 1 and hvac_action == 'heating' else {'r': 76, 'g': 175, 'b': 80} if mode != 1 else {'r': 158, 'g': 158, 'b': 158} %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
-                          'iconColorRgb': heat_color,
                           'number': {
                             'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
