@@ -558,6 +558,28 @@ actions:
                             {% set style = 'button' %}
                           {% endif %}
                         {% endif %}
+                        {% set tile_label = ((state_attr(entity, 'friendly_name') or entity)
+                          | replace('Ã„', 'Ae')
+                          | replace('Ã–', 'Oe')
+                          | replace('Ãœ', 'Ue')
+                          | replace('Ã¤', 'ae')
+                          | replace('Ã¶', 'oe')
+                          | replace('Ã¼', 'ue')
+                          | replace('ÃŸ', 'ss')) %}
+                        {% set tile_label = (state_attr(entity, 'friendly_name') or entity) %}
+                        {% set icon_value = '_thermostat' if domain == 'climate' else '_bulb' if domain == 'light' else state_attr(entity, 'icon') %}
+                        {% if style == 'buttonUpDownLevel' and icon_value %}
+                          {% set tile_payload = {'tile': tile.tile, 'style': style, 'label': tile_label, 'tag': entity, 'icon': icon_value, 'levelBottom': 0, 'levelTop': 100} %}
+                        {% elif style == 'buttonUpDownLevel' %}
+                          {% set tile_payload = {'tile': tile.tile, 'style': style, 'label': tile_label, 'tag': entity, 'levelBottom': 0, 'levelTop': 100} %}
+                        {% elif icon_value %}
+                          {% set tile_payload = {'tile': tile.tile, 'style': style, 'label': tile_label, 'tag': entity, 'icon': icon_value} %}
+                        {% else %}
+                          {% set tile_payload = {'tile': tile.tile, 'style': style, 'label': tile_label, 'tag': entity} %}
+                        {% endif %}
+                        {% set tiles.items = tiles.items + [tile_payload] %}
+                        {# old payload construction retained below for reference, disabled by an always-false guard #}
+                        {% if false %}
                         {% set tile_payload_base = {
                           'tile': tile.tile,
                           'style': style,
@@ -583,7 +605,7 @@ actions:
                         {% else %}
                           {% set tile_payload = tile_payload_base %}
                         {% endif %}
-                        {% set tiles.items = tiles.items + [tile_payload] %}
+                        {% endif %}
                       {% endif %}
                     {% endfor %}
                     {% if tiles.items | length > 0 %}
@@ -639,7 +661,8 @@ actions:
                           | replace('ß', 'ss')) %}
                         {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'text': sensor_text} %}
                       {% elif domain == 'cover' %}
-                        {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'open') else 'off'} %}
+                        {% set cover_level = state_attr(entity, 'current_position') %}
+                        {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'open') else 'off', 'level': (cover_level | int(0)) if cover_level is not none else 0, 'subLabel': states(entity)} %}
                       {% elif domain == 'climate' %}
                         {% set target_temp = state_attr(entity, 'temperature') %}
                         {% set current_temp = state_attr(entity, 'current_temperature') %}
@@ -671,39 +694,55 @@ actions:
                         {% set has_ct = 'color_temp' in supported_modes %}
                         {% if has_rgb or has_ct %}
                           {% set brightness = state_attr(entity, 'brightness') or 0 %}
-                          {% if has_rgb and has_ct %}
-                            {% set hs_color = state_attr(entity, 'hs_color') or [0, 0] %}
-                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 6500 %}
+                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                          {% set color_mode = state_attr(entity, 'color_mode') %}
+                          {% if has_ct and color_mode == 'color_temp' %}
+                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 4000 %}
                             {% set tile_update.value = {
                               'screen': repeat.item.screen,
                               'tile': repeat.item.tile,
                               'state': 'on' if is_state(entity, 'on') else 'off',
-                              'brightness': brightness,
-                              'hue': (hs_color[0] / 360 * 255) | int(0),
-                              'saturation': (hs_color[1]) | int(0),
-                              'colorTemp': color_temp
+                              'colorPicker': {
+                                'mode': 'colorKelvin',
+                                'colorKelvin': color_temp,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(entity)
                             } %}
                           {% elif has_rgb %}
-                            {% set hs_color = state_attr(entity, 'hs_color') or [0, 0] %}
+                            {% set rgb_color = state_attr(entity, 'rgb_color') or [255, 255, 255] %}
                             {% set tile_update.value = {
                               'screen': repeat.item.screen,
                               'tile': repeat.item.tile,
                               'state': 'on' if is_state(entity, 'on') else 'off',
-                              'brightness': brightness,
-                              'hue': (hs_color[0] / 360 * 255) | int(0),
-                              'saturation': (hs_color[1]) | int(0)
+                              'colorPicker': {
+                                'mode': 'colorRgb',
+                                'colorRgb': {
+                                  'r': rgb_color[0] | int(0),
+                                  'g': rgb_color[1] | int(0),
+                                  'b': rgb_color[2] | int(0)
+                                },
+                                'colorKelvin': 0,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(entity)
                             } %}
                           {% elif has_ct %}
-                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 6500 %}
+                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 4000 %}
                             {% set tile_update.value = {
                               'screen': repeat.item.screen,
                               'tile': repeat.item.tile,
                               'state': 'on' if is_state(entity, 'on') else 'off',
-                              'brightness': brightness,
-                              'colorTemp': color_temp
+                              'colorPicker': {
+                                'mode': 'colorKelvin',
+                                'colorKelvin': color_temp,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(entity)
                             } %}
                           {% else %}
-                            {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off'} %}
+                            {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                            {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off', 'level': brightness_pct, 'subLabel': states(entity)} %}
                           {% endif %}
                         {% else %}
                           {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off'} %}
@@ -744,7 +783,8 @@ actions:
                           | replace('ß', 'ss')) %}
                         {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'text': sensor_text} %}
                       {% elif domain == 'cover' %}
-                        {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'open') else 'off'} %}
+                        {% set cover_level = state_attr(entity, 'current_position') %}
+                        {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'open') else 'off', 'level': (cover_level | int(0)) if cover_level is not none else 0, 'subLabel': states(entity)} %}
                       {% elif domain == 'climate' %}
                         {% set target_temp = state_attr(entity, 'temperature') %}
                         {% set current_temp = state_attr(entity, 'current_temperature') %}
@@ -776,39 +816,55 @@ actions:
                         {% set has_ct = 'color_temp' in supported_modes %}
                         {% if has_rgb or has_ct %}
                           {% set brightness = state_attr(entity, 'brightness') or 0 %}
-                          {% if has_rgb and has_ct %}
-                            {% set hs_color = state_attr(entity, 'hs_color') or [0, 0] %}
-                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 6500 %}
+                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                          {% set color_mode = state_attr(entity, 'color_mode') %}
+                          {% if has_ct and color_mode == 'color_temp' %}
+                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 4000 %}
                             {% set tile_update.value = {
                               'screen': repeat.item.screen,
                               'tile': repeat.item.tile,
                               'state': 'on' if is_state(entity, 'on') else 'off',
-                              'brightness': brightness,
-                              'hue': (hs_color[0] / 360 * 255) | int(0),
-                              'saturation': (hs_color[1]) | int(0),
-                              'colorTemp': color_temp
+                              'colorPicker': {
+                                'mode': 'colorKelvin',
+                                'colorKelvin': color_temp,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(entity)
                             } %}
                           {% elif has_rgb %}
-                            {% set hs_color = state_attr(entity, 'hs_color') or [0, 0] %}
+                            {% set rgb_color = state_attr(entity, 'rgb_color') or [255, 255, 255] %}
                             {% set tile_update.value = {
                               'screen': repeat.item.screen,
                               'tile': repeat.item.tile,
                               'state': 'on' if is_state(entity, 'on') else 'off',
-                              'brightness': brightness,
-                              'hue': (hs_color[0] / 360 * 255) | int(0),
-                              'saturation': (hs_color[1]) | int(0)
+                              'colorPicker': {
+                                'mode': 'colorRgb',
+                                'colorRgb': {
+                                  'r': rgb_color[0] | int(0),
+                                  'g': rgb_color[1] | int(0),
+                                  'b': rgb_color[2] | int(0)
+                                },
+                                'colorKelvin': 0,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(entity)
                             } %}
                           {% elif has_ct %}
-                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 6500 %}
+                            {% set color_temp = state_attr(entity, 'color_temp_kelvin') or 4000 %}
                             {% set tile_update.value = {
                               'screen': repeat.item.screen,
                               'tile': repeat.item.tile,
                               'state': 'on' if is_state(entity, 'on') else 'off',
-                              'brightness': brightness,
-                              'colorTemp': color_temp
+                              'colorPicker': {
+                                'mode': 'colorKelvin',
+                                'colorKelvin': color_temp,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(entity)
                             } %}
                           {% else %}
-                            {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off'} %}
+                            {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                            {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off', 'level': brightness_pct, 'subLabel': states(entity)} %}
                           {% endif %}
                         {% else %}
                           {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off'} %}
@@ -842,6 +898,36 @@ actions:
           - condition: template
             value_template: "{{ matched_entity != '' }}"
           - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ matched_domain == 'light' and event_type == 'level' }}"
+                sequence:
+                  - variables:
+                      event_level: "{{ trigger.payload_json.state | default(0, true) | int(0) }}"
+                      event_brightness: "{{ ((event_level * 255 / 100) | round(0)) | int(0) }}"
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ event_level <= 0 }}"
+                        sequence:
+                          - action: light.turn_off
+                            target:
+                              entity_id: "{{ matched_entity }}"
+                    default:
+                      - action: light.turn_on
+                        target:
+                          entity_id: "{{ matched_entity }}"
+                        data:
+                          brightness: "{{ event_brightness }}"
+              - conditions:
+                  - condition: template
+                    value_template: "{{ matched_domain == 'cover' and event_type == 'level' }}"
+                sequence:
+                  - action: cover.set_cover_position
+                    target:
+                      entity_id: "{{ matched_entity }}"
+                    data:
+                      position: "{{ trigger.payload_json.state | default(0, true) | int(0) }}"
               - conditions:
                   - condition: template
                     value_template: "{{ matched_domain in ['light', 'switch', 'input_boolean', 'fan'] and event_type == 'button' and event_action == 'single' }}"
@@ -907,42 +993,46 @@ actions:
                 sequence:
                   - variables:
                       color_rgb: "{{ trigger.payload_json.state.colorRgb if trigger.payload_json.state.colorRgb is defined else {'r': 255, 'g': 0, 'b': 0} }}"
-                      color_brightness: "{{ trigger.payload_json.state.brightness | default(255, true) | int(0) if trigger.payload_json.state.brightness is defined else trigger.payload_json.brightness | default(255, true) | int(0) }}"
-                      color_kelvin: "{{ trigger.payload_json.state.colorKelvin | default(6500, true) | int(0) if trigger.payload_json.state.colorKelvin is defined else trigger.payload_json.colorTemp | default(6500, true) | int(0) }}"
-                      r_norm: "{{ (color_rgb.r | default(255, true) | int(0)) / 255.0 }}"
-                      g_norm: "{{ (color_rgb.g | default(0, true) | int(0)) / 255.0 }}"
-                      b_norm: "{{ (color_rgb.b | default(0, true) | int(0)) / 255.0 }}"
-                      c_max: "{{ [r_norm, g_norm, b_norm] | max }}"
-                      c_min: "{{ [r_norm, g_norm, b_norm] | min }}"
-                      delta: "{{ c_max - c_min }}"
-                      hue_raw: >-
-                        {% if delta == 0 %} 0
-                        {% elif c_max == r_norm %} {{ (60 * (((g_norm - b_norm) / delta) % 6)) | round(0) | int(0) }}
-                        {% elif c_max == g_norm %} {{ (60 * (((b_norm - r_norm) / delta) + 2)) | round(0) | int(0) }}
-                        {% else %} {{ (60 * (((r_norm - g_norm) / delta) + 4)) | round(0) | int(0) }}
+                      color_brightness_raw: "{{ trigger.payload_json.state.brightness | default(100, true) | int(0) if trigger.payload_json.state.brightness is defined else trigger.payload_json.brightness | default(100, true) | int(0) }}"
+                      color_brightness: >-
+                        {% set brightness_raw = color_brightness_raw | int(0) %}
+                        {% if brightness_raw <= 100 %}
+                          {{ ((brightness_raw * 255 / 100) | round(0)) | int(0) }}
+                        {% else %}
+                          {{ [brightness_raw, 255] | min }}
                         {% endif %}
-                      saturation_raw: >-
-                        {% if c_max == 0 %} 0
-                        {% else %} {{ ((delta / c_max) * 100) | round(0) | int(0) }}
-                        {% endif %}
+                      color_kelvin: "{{ trigger.payload_json.state.colorKelvin | default(0, true) | int(0) if trigger.payload_json.state.colorKelvin is defined else trigger.payload_json.colorTemp | default(0, true) | int(0) }}"
+                      color_red: "{{ color_rgb.r | default(0, true) | int(0) }}"
+                      color_green: "{{ color_rgb.g | default(0, true) | int(0) }}"
+                      color_blue: "{{ color_rgb.b | default(0, true) | int(0) }}"
                   - choose:
                       - conditions:
                           - condition: template
-                            value_template: "{{ trigger.payload_json.state.brightness | default(1, true) | int(0) == 0 or color_brightness == 0 }}"
+                            value_template: "{{ color_brightness_raw | int(0) == 0 or color_brightness | int(0) == 0 }}"
                         sequence:
                           - action: light.turn_off
                             target:
                               entity_id: "{{ matched_entity }}"
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ color_kelvin | int(0) > 0 }}"
+                        sequence:
+                          - action: light.turn_on
+                            target:
+                              entity_id: "{{ matched_entity }}"
+                            data:
+                              brightness: "{{ color_brightness }}"
+                              color_temp_kelvin: "{{ color_kelvin }}"
                     default:
                       - action: light.turn_on
                         target:
                           entity_id: "{{ matched_entity }}"
                         data:
                           brightness: "{{ color_brightness }}"
-                          hs_color:
-                            - "{{ hue_raw }}"
-                            - "{{ saturation_raw }}"
-                          color_temp_kelvin: "{{ color_kelvin }}"
+                          rgb_color:
+                            - "{{ color_red }}"
+                            - "{{ color_green }}"
+                            - "{{ color_blue }}"
               - conditions:
                   - condition: template
                     value_template: "{{ matched_domain == 'climate' and event_type in ['thermostat', 'tile'] }}"
@@ -1014,7 +1104,8 @@ actions:
                     data:
                       topic: "oxrs/cmnd/{{ device_client_id }}"
                       payload: >-
-                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'open') else 'off'}]} | to_json(ensure_ascii=False) }}
+                        {% set cover_level = state_attr(matched_entity, 'current_position') %}
+                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'open') else 'off', 'level': (cover_level | int(0)) if cover_level is not none else 0, 'subLabel': states(matched_entity)}]} | to_json(ensure_ascii=False) }}
               - conditions:
                   - condition: template
                     value_template: "{{ matched_domain == 'climate' }}"
@@ -1061,20 +1152,44 @@ actions:
                         {% set has_ct = 'color_temp' in supported_modes %}
                         {% set brightness = state_attr(matched_entity, 'brightness') or 0 %}
                         {% if has_rgb or has_ct %}
-                          {% set hs_color = state_attr(matched_entity, 'hs_color') or [0, 0] %}
-                          {% set color_temp = state_attr(matched_entity, 'color_temp_kelvin') or 6500 %}
-                          {% set tile_update = {
-                            'screen': event_screen,
-                            'tile': event_tile,
-                            'state': 'on' if is_state(matched_entity, 'on') else 'off',
-                            'brightness': brightness,
-                            'hue': (hs_color[0] / 360 * 255) | int(0),
-                            'saturation': (hs_color[1]) | int(0),
-                            'colorTemp': color_temp
-                          } %}
+                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                          {% set color_mode = state_attr(matched_entity, 'color_mode') %}
+                          {% if has_ct and color_mode == 'color_temp' %}
+                            {% set color_temp = state_attr(matched_entity, 'color_temp_kelvin') or 4000 %}
+                            {% set tile_update = {
+                              'screen': event_screen,
+                              'tile': event_tile,
+                              'state': 'on' if is_state(matched_entity, 'on') else 'off',
+                              'colorPicker': {
+                                'mode': 'colorKelvin',
+                                'colorKelvin': color_temp,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(matched_entity)
+                            } %}
+                          {% else %}
+                            {% set rgb_color = state_attr(matched_entity, 'rgb_color') or [255, 255, 255] %}
+                            {% set tile_update = {
+                              'screen': event_screen,
+                              'tile': event_tile,
+                              'state': 'on' if is_state(matched_entity, 'on') else 'off',
+                              'colorPicker': {
+                                'mode': 'colorRgb',
+                                'colorRgb': {
+                                  'r': rgb_color[0] | int(0),
+                                  'g': rgb_color[1] | int(0),
+                                  'b': rgb_color[2] | int(0)
+                                },
+                                'colorKelvin': 0,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': states(matched_entity)
+                            } %}
+                          {% endif %}
                           {{ {'tiles': [tile_update]} | to_json(ensure_ascii=False) }}
                         {% else %}
-                          {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off'}]} | to_json(ensure_ascii=False) }}
+                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                          {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off', 'level': brightness_pct, 'subLabel': states(matched_entity)}]} | to_json(ensure_ascii=False) }}
                         {% endif %}
               - conditions:
                   - condition: template
@@ -1138,7 +1253,8 @@ actions:
                     data:
                       topic: "oxrs/cmnd/{{ device_client_id }}"
                       payload: >-
-                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if changed_state == 'open' else 'off'}]} | to_json(ensure_ascii=False) }}
+                        {% set cover_level = state_attr(matched_entity, 'current_position') %}
+                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if changed_state == 'open' else 'off', 'level': (cover_level | int(0)) if cover_level is not none else 0, 'subLabel': changed_state}]} | to_json(ensure_ascii=False) }}
               - conditions:
                   - condition: template
                     value_template: "{{ changed_domain == 'climate' }}"
@@ -1184,20 +1300,44 @@ actions:
                         {% set has_ct = 'color_temp' in supported_modes %}
                         {% set brightness = state_attr(matched_entity, 'brightness') or 0 %}
                         {% if has_rgb or has_ct %}
-                          {% set hs_color = state_attr(matched_entity, 'hs_color') or [0, 0] %}
-                          {% set color_temp = state_attr(matched_entity, 'color_temp_kelvin') or 6500 %}
-                          {% set tile_update = {
-                            'screen': event_screen,
-                            'tile': event_tile,
-                            'state': 'on' if changed_state == 'on' else 'off',
-                            'brightness': brightness,
-                            'hue': (hs_color[0] / 360 * 255) | int(0),
-                            'saturation': (hs_color[1]) | int(0),
-                            'colorTemp': color_temp
-                          } %}
+                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                          {% set color_mode = state_attr(matched_entity, 'color_mode') %}
+                          {% if has_ct and color_mode == 'color_temp' %}
+                            {% set color_temp = state_attr(matched_entity, 'color_temp_kelvin') or 4000 %}
+                            {% set tile_update = {
+                              'screen': event_screen,
+                              'tile': event_tile,
+                              'state': 'on' if changed_state == 'on' else 'off',
+                              'colorPicker': {
+                                'mode': 'colorKelvin',
+                                'colorKelvin': color_temp,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': changed_state
+                            } %}
+                          {% else %}
+                            {% set rgb_color = state_attr(matched_entity, 'rgb_color') or [255, 255, 255] %}
+                            {% set tile_update = {
+                              'screen': event_screen,
+                              'tile': event_tile,
+                              'state': 'on' if changed_state == 'on' else 'off',
+                              'colorPicker': {
+                                'mode': 'colorRgb',
+                                'colorRgb': {
+                                  'r': rgb_color[0] | int(0),
+                                  'g': rgb_color[1] | int(0),
+                                  'b': rgb_color[2] | int(0)
+                                },
+                                'colorKelvin': 0,
+                                'brightness': brightness_pct
+                              },
+                              'subLabel': changed_state
+                            } %}
+                          {% endif %}
                           {{ {'tiles': [tile_update]} | to_json(ensure_ascii=False) }}
                         {% else %}
-                          {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if changed_state == 'on' else 'off'}]} | to_json(ensure_ascii=False) }}
+                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
+                          {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if changed_state == 'on' else 'off', 'level': brightness_pct, 'subLabel': changed_state}]} | to_json(ensure_ascii=False) }}
                         {% endif %}
               - conditions:
                   - condition: template
