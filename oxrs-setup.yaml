@@ -930,22 +930,40 @@ actions:
                       thermostat_mode: >-
                         {% set state_payload = trigger.payload_json.state if trigger.payload_json.state is defined else {} %}
                         {{ state_payload.mode | default(trigger.payload_json.mode | default(1, true), true) | int(1) }}
+                      hvac_on_mode: >-
+                        {% set hvac_modes = state_attr(matched_entity, 'hvac_modes') or [] %}
+                        {% if 'heat' in hvac_modes %}
+                          heat
+                        {% else %}
+                          {% set ns = namespace(mode='heat') %}
+                          {% for hvac_mode in hvac_modes %}
+                            {% if hvac_mode != 'off' and ns.mode == 'heat' %}
+                              {% set ns.mode = hvac_mode %}
+                            {% endif %}
+                          {% endfor %}
+                          {{ ns.mode }}
+                        {% endif %}
                   - choose:
                       - conditions:
                           - condition: template
                             value_template: "{{ thermostat_mode == 0 }}"
                         sequence:
-                          - action: climate.turn_off
-                            continue_on_error: true
+                          - action: climate.set_hvac_mode
                             target:
                               entity_id: "{{ matched_entity }}"
+                            data:
+                              hvac_mode: "off"
                     default:
+                      - action: climate.set_hvac_mode
+                        target:
+                          entity_id: "{{ matched_entity }}"
+                        data:
+                          hvac_mode: "{{ hvac_on_mode | trim }}"
                       - action: climate.set_temperature
                         target:
                           entity_id: "{{ matched_entity }}"
                         data:
                           temperature: "{{ target_temperature }}"
-                          hvac_mode: heat
           - choose:
               - conditions:
                   - condition: template
@@ -996,7 +1014,7 @@ actions:
                             'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
                             'subUnits': '°C'
                           },
-                          'state': 'off' if is_state(matched_entity, 'off') else 'on',
+                          'state': 'off' if mode == 0 else 'on',
                           'thermostat': {
                             'modeList': ['Off', 'On'],
                             'mode': mode,
@@ -1004,7 +1022,7 @@ actions:
                             'currentTemperature': current_value,
                             'units': '°C'
                           },
-                          'subLabel': states(matched_entity)
+                          'subLabel': 'off' if mode == 0 else 'on'
                         }]} | to_json(ensure_ascii=False) }}
               - conditions:
                   - condition: template
