@@ -571,7 +571,7 @@ actions:
                             | replace('ß', 'ss')),
                           'tag': entity
                         } %}
-                        {% set icon_value = state_attr(entity, 'icon') %}
+                        {% set icon_value = '_thermostat' if domain == 'climate' else state_attr(entity, 'icon') %}
                         {% if icon_value %}
                           {% set _ = tile_payload.update({'icon': icon_value}) %}
                         {% endif %}
@@ -634,9 +634,28 @@ actions:
                         {% set _ = tile_update.update({'state': 'on' if is_state(entity, 'open') else 'off'}) %}
                       {% elif domain == 'climate' %}
                         {% set target_temp = state_attr(entity, 'temperature') %}
-                        {% if target_temp is not none %}
-                          {% set _ = tile_update.update({'value': ((target_temp * 10) | int(0))}) %}
-                        {% endif %}
+                        {% set current_temp = state_attr(entity, 'current_temperature') %}
+                        {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
+                        {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
+                        {% set preset_mode = state_attr(entity, 'preset_mode') %}
+                        {% set mode = 0 if is_state(entity, 'off') else 2 if preset_mode in ['auto', 'schedule'] or is_state(entity, 'auto') else 3 if preset_mode == 'manual' else 1 %}
+                        {% set _ = tile_update.update({
+                          'number': {
+                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'units': '°C',
+                            'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
+                            'subUnits': '°C'
+                          },
+                          'state': 'off' if is_state(entity, 'off') else 'on',
+                          'thermostat': {
+                            'modeList': ['Off', 'On', 'Auto', 'Manual'],
+                            'mode': mode,
+                            'targetTemperature': target_value,
+                            'currentTemperature': current_value,
+                            'units': '°C'
+                          },
+                          'subLabel': states(entity)
+                        }) %}
                       {% elif domain == 'light' %}
                         {% set supported_modes = state_attr(entity, 'supported_color_modes') or [] %}
                         {% set has_rgb = 'hs' in supported_modes or 'xy' in supported_modes or 'rgb' in supported_modes %}
@@ -713,9 +732,28 @@ actions:
                         {% set _ = tile_update.update({'state': 'on' if is_state(entity, 'open') else 'off'}) %}
                       {% elif domain == 'climate' %}
                         {% set target_temp = state_attr(entity, 'temperature') %}
-                        {% if target_temp is not none %}
-                          {% set _ = tile_update.update({'value': ((target_temp * 10) | int(0))}) %}
-                        {% endif %}
+                        {% set current_temp = state_attr(entity, 'current_temperature') %}
+                        {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
+                        {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
+                        {% set preset_mode = state_attr(entity, 'preset_mode') %}
+                        {% set mode = 0 if is_state(entity, 'off') else 2 if preset_mode in ['auto', 'schedule'] or is_state(entity, 'auto') else 3 if preset_mode == 'manual' else 1 %}
+                        {% set _ = tile_update.update({
+                          'number': {
+                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'units': '°C',
+                            'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
+                            'subUnits': '°C'
+                          },
+                          'state': 'off' if is_state(entity, 'off') else 'on',
+                          'thermostat': {
+                            'modeList': ['Off', 'On', 'Auto', 'Manual'],
+                            'mode': mode,
+                            'targetTemperature': target_value,
+                            'currentTemperature': current_value,
+                            'units': '°C'
+                          },
+                          'subLabel': states(entity)
+                        }) %}
                       {% elif domain == 'light' %}
                         {% set supported_modes = state_attr(entity, 'supported_color_modes') or [] %}
                         {% set has_rgb = 'hs' in supported_modes or 'xy' in supported_modes or 'rgb' in supported_modes %}
@@ -757,10 +795,13 @@ actions:
                         {% set _ = tile_update.update({'state': 'on' if is_state(entity, 'on') else 'off'}) %}
                       {% endif %}
                       {{ {'tiles': [tile_update]} | to_json(ensure_ascii=False) }}
+      - conditions:
           - condition: template
             value_template: >-
-              {{ trigger.payload_json.type != 'screen'
-                 or trigger.payload_json.state not in ['unloaded', 'loaded'] }}
+              {{ trigger.id == 'panel_stat'
+                 and (trigger.payload_json.type != 'screen'
+                      or trigger.payload_json.state not in ['unloaded', 'loaded']) }}
+        sequence:
           - variables:
               event_screen: "{{ trigger.payload_json.screen | default(0) | int(0) }}"
               event_tile: "{{ trigger.payload_json.tile | default(0) | int(0) }}"
@@ -885,7 +926,9 @@ actions:
                     value_template: "{{ matched_domain == 'climate' and event_type in ['thermostat', 'tile'] }}"
                 sequence:
                   - variables:
-                      target_temperature: "{{ (trigger.payload_json.state.targetTemperature | default(200, true) | int(0)) / 10.0 }}"
+                      target_temperature: >-
+                        {% set state_payload = trigger.payload_json.state if trigger.payload_json.state is defined else {} %}
+                        {{ (state_payload.targetTemperature | default(trigger.payload_json.targetTemperature | default(200, true), true) | int(0)) / 10.0 }}
                   - action: climate.set_temperature
                     target:
                       entity_id: "{{ matched_entity }}"
@@ -926,9 +969,31 @@ actions:
                     data:
                       topic: "oxrs/cmnd/{{ device_client_id }}"
                       payload: >-
-                        {% set target_temp = state_attr(matched_entity, 'temperature') %}
-                        {% set value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
-                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'value': value}]} | to_json(ensure_ascii=False) }}
+                        {% set target_temp = target_temperature if target_temperature is defined else state_attr(matched_entity, 'temperature') %}
+                        {% set current_temp = state_attr(matched_entity, 'current_temperature') %}
+                        {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
+                        {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
+                        {% set preset_mode = state_attr(matched_entity, 'preset_mode') %}
+                        {% set mode = 0 if is_state(matched_entity, 'off') else 2 if preset_mode in ['auto', 'schedule'] or is_state(matched_entity, 'auto') else 3 if preset_mode == 'manual' else 1 %}
+                        {{ {'tiles': [{
+                          'screen': event_screen,
+                          'tile': event_tile,
+                          'number': {
+                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'units': '°C',
+                            'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
+                            'subUnits': '°C'
+                          },
+                          'state': 'off' if is_state(matched_entity, 'off') else 'on',
+                          'thermostat': {
+                            'modeList': ['Off', 'On', 'Auto', 'Manual'],
+                            'mode': mode,
+                            'targetTemperature': target_value,
+                            'currentTemperature': current_value,
+                            'units': '°C'
+                          },
+                          'subLabel': states(matched_entity)
+                        }]} | to_json(ensure_ascii=False) }}
               - conditions:
                   - condition: template
                     value_template: "{{ matched_domain == 'light' }}"
@@ -989,7 +1054,9 @@ actions:
                  and (event_screen | int(0)) > 0
                  and page_enabled_map.get(event_screen | int(0), page_enabled_map.get((event_screen | int(0)) | string, false))
                  and trigger.event.data.new_state is not none
-                 and (trigger.event.data.old_state is none or trigger.event.data.old_state.state != trigger.event.data.new_state.state) }}
+                 and (trigger.event.data.old_state is none
+                      or trigger.event.data.old_state.state != trigger.event.data.new_state.state
+                      or changed_domain == 'climate') }}
           - choose:
               - conditions:
                   - condition: template
@@ -1027,8 +1094,30 @@ actions:
                       topic: "oxrs/cmnd/{{ device_client_id }}"
                       payload: >-
                         {% set target_temp = state_attr(matched_entity, 'temperature') %}
-                        {% set value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
-                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'value': value}]} | to_json(ensure_ascii=False) }}
+                        {% set current_temp = state_attr(matched_entity, 'current_temperature') %}
+                        {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
+                        {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
+                        {% set preset_mode = state_attr(matched_entity, 'preset_mode') %}
+                        {% set mode = 0 if changed_state == 'off' else 2 if preset_mode in ['auto', 'schedule'] or changed_state == 'auto' else 3 if preset_mode == 'manual' else 1 %}
+                        {{ {'tiles': [{
+                          'screen': event_screen,
+                          'tile': event_tile,
+                          'number': {
+                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'units': '°C',
+                            'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
+                            'subUnits': '°C'
+                          },
+                          'state': 'off' if changed_state == 'off' else 'on',
+                          'thermostat': {
+                            'modeList': ['Off', 'On', 'Auto', 'Manual'],
+                            'mode': mode,
+                            'targetTemperature': target_value,
+                            'currentTemperature': current_value,
+                            'units': '°C'
+                          },
+                          'subLabel': changed_state
+                        }]} | to_json(ensure_ascii=False) }}
               - conditions:
                   - condition: template
                     value_template: "{{ changed_domain == 'light' }}"
