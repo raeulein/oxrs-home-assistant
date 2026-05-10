@@ -17,7 +17,7 @@ blueprint:
             text:
         page_1_label:
           name: Page 1 label
-          default: Page 1
+          default: Home
           selector:
             text:
         page_2_label:
@@ -40,6 +40,18 @@ blueprint:
           default: Page 5
           selector:
             text:
+        thermostat_use_area_name:
+          name: Show area name for thermostats
+          description: Use the Home Assistant area name instead of the entity name for climate tiles when an area is assigned.
+          default: false
+          selector:
+            boolean:
+        temperature_sensor_use_area_name:
+          name: Show area name for temperature sensors
+          description: Use the Home Assistant area name instead of the entity name for temperature sensor tiles when an area is assigned.
+          default: false
+          selector:
+            boolean:
     page_1:
       name: Page 1 tiles
       description: Configure up to 6 tiles for page 1. Leave empty to skip.
@@ -260,6 +272,8 @@ variables:
   page_3_label: !input page_3_label
   page_4_label: !input page_4_label
   page_5_label: !input page_5_label
+  thermostat_use_area_name: !input thermostat_use_area_name
+  temperature_sensor_use_area_name: !input temperature_sensor_use_area_name
   page_1_enabled: !input page_1_enabled
   page_2_enabled: !input page_2_enabled
   page_3_enabled: !input page_3_enabled
@@ -525,6 +539,14 @@ actions:
               topic: "oxrs/conf/{{ device_client_id }}"
               retain: true
               payload: >-
+                {{ {'screens': []} | to_json(ensure_ascii=False) }}
+          - delay:
+              milliseconds: 100
+          - action: mqtt.publish
+            data:
+              topic: "oxrs/conf/{{ device_client_id }}"
+              retain: true
+              payload: >-
                 {% set ns = namespace(screens=[]) %}
                 {% for screen in range(1, 6) %}
                   {% if page_enabled_map.get(screen, page_enabled_map.get(screen | string, false)) %}
@@ -558,15 +580,17 @@ actions:
                             {% set style = 'button' %}
                           {% endif %}
                         {% endif %}
-                        {% set tile_label = ((state_attr(entity, 'friendly_name') or entity)
-                          | replace('Ã„', 'Ae')
-                          | replace('Ã–', 'Oe')
-                          | replace('Ãœ', 'Ue')
-                          | replace('Ã¤', 'ae')
-                          | replace('Ã¶', 'oe')
-                          | replace('Ã¼', 'ue')
-                          | replace('ÃŸ', 'ss')) %}
-                        {% set tile_label = (state_attr(entity, 'friendly_name') or entity) %}
+                        {% set area_label = area_name(entity) %}
+                        {% set use_area_label = (domain == 'climate' and thermostat_use_area_name) or (domain == 'sensor' and state_attr(entity, 'device_class') == 'temperature' and temperature_sensor_use_area_name) %}
+                        {% set raw_tile_label = area_label if use_area_label and area_label else (state_attr(entity, 'friendly_name') or entity) %}
+                        {% set tile_label = (raw_tile_label
+                          | replace('Ä', 'Ae')
+                          | replace('Ö', 'Oe')
+                          | replace('Ü', 'Ue')
+                          | replace('ä', 'ae')
+                          | replace('ö', 'oe')
+                          | replace('ü', 'ue')
+                          | replace('ß', 'ss')) %}
                         {% set icon_value = '_thermostat' if domain == 'climate' else '_bulb' if domain == 'light' else state_attr(entity, 'icon') %}
                         {% if style == 'buttonUpDownLevel' and icon_value %}
                           {% set tile_payload = {'tile': tile.tile, 'style': style, 'label': tile_label, 'tag': entity, 'icon': icon_value, 'levelBottom': 0, 'levelTop': 100} %}
@@ -578,34 +602,6 @@ actions:
                           {% set tile_payload = {'tile': tile.tile, 'style': style, 'label': tile_label, 'tag': entity} %}
                         {% endif %}
                         {% set tiles.items = tiles.items + [tile_payload] %}
-                        {# old payload construction retained below for reference, disabled by an always-false guard #}
-                        {% if false %}
-                        {% set tile_payload_base = {
-                          'tile': tile.tile,
-                          'style': style,
-                          'label': ((state_attr(entity, 'friendly_name') or entity)
-                            | replace('Ä', 'Ae')
-                            | replace('Ö', 'Oe')
-                            | replace('Ü', 'Ue')
-                            | replace('ä', 'ae')
-                            | replace('ö', 'oe')
-                            | replace('ü', 'ue')
-                            | replace('ß', 'ss')),
-                          'tag': entity
-                        } %}
-                        {% set icon_value = '_thermostat' if domain == 'climate' else state_attr(entity, 'icon') %}
-                        {% if icon_value %}
-                          {% set tile_payload = {
-                            'tile': tile_payload_base.tile,
-                            'style': tile_payload_base.style,
-                            'label': tile_payload_base.label,
-                            'tag': tile_payload_base.tag,
-                            'icon': icon_value
-                          } %}
-                        {% else %}
-                          {% set tile_payload = tile_payload_base %}
-                        {% endif %}
-                        {% endif %}
                       {% endif %}
                     {% endfor %}
                     {% if tiles.items | length > 0 %}
@@ -668,7 +664,7 @@ actions:
                         {% set current_temp = state_attr(entity, 'current_temperature') %}
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
-                        {% set mode = 0 if is_state(entity, 'off') else 1 %}
+                        {% set mode = 1 if is_state(entity, 'off') else 2 %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
@@ -790,7 +786,7 @@ actions:
                         {% set current_temp = state_attr(entity, 'current_temperature') %}
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
-                        {% set mode = 0 if is_state(entity, 'off') else 1 %}
+                        {% set mode = 1 if is_state(entity, 'off') else 2 %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
@@ -1060,13 +1056,18 @@ actions:
                   - choose:
                       - conditions:
                           - condition: template
-                            value_template: "{{ thermostat_mode == 0 }}"
+                            value_template: "{{ thermostat_mode | int(1) in [0, 1] }}"
                         sequence:
                           - action: climate.set_hvac_mode
+                            continue_on_error: true
                             target:
                               entity_id: "{{ matched_entity }}"
                             data:
                               hvac_mode: "off"
+                          - action: climate.turn_off
+                            continue_on_error: true
+                            target:
+                              entity_id: "{{ matched_entity }}"
                     default:
                       - action: climate.set_hvac_mode
                         target:
@@ -1118,8 +1119,8 @@ actions:
                         {% set current_temp = state_attr(matched_entity, 'current_temperature') %}
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
-                        {% set mode = thermostat_mode if thermostat_mode is defined else 0 if is_state(matched_entity, 'off') else 1 %}
-                        {% set mode = 0 if mode == 0 else 1 %}
+                        {% set mode = thermostat_mode if thermostat_mode is defined else 1 if is_state(matched_entity, 'off') else 2 %}
+                        {% set mode = 1 if (mode | int(1)) in [0, 1] else 2 %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
@@ -1129,7 +1130,7 @@ actions:
                             'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
                             'subUnits': '°C'
                           },
-                          'state': 'off' if mode == 0 else 'on',
+                          'state': 'off' if mode == 1 else 'on',
                           'thermostat': {
                             'modeList': ['Off', 'On'],
                             'mode': mode,
@@ -1137,7 +1138,7 @@ actions:
                             'currentTemperature': current_value,
                             'units': '°C'
                           },
-                          'subLabel': 'off' if mode == 0 else 'on'
+                          'subLabel': 'off' if mode == 1 else 'on'
                         }]} | to_json(ensure_ascii=False) }}
               - conditions:
                   - condition: template
@@ -1267,7 +1268,7 @@ actions:
                         {% set current_temp = state_attr(matched_entity, 'current_temperature') %}
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
-                        {% set mode = 0 if changed_state == 'off' else 1 %}
+                        {% set mode = 1 if changed_state == 'off' else 2 %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
