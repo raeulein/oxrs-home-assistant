@@ -52,6 +52,109 @@ blueprint:
           default: false
           selector:
             boolean:
+    panel_options:
+      name: Panel options
+      description: Optional device settings and footer content. Nothing in this group is sent unless the related option is enabled.
+      icon: mdi:tablet-dashboard
+      collapsed: true
+      input:
+        display_timeout_enabled:
+          name: Set display timeout
+          default: false
+          selector:
+            boolean:
+        display_timeout_seconds:
+          name: Display timeout seconds
+          default: 60
+          selector:
+            number:
+              min: 0
+              max: 3600
+              unit_of_measurement: s
+              mode: box
+        backlight_enabled:
+          name: Set backlight brightness
+          default: false
+          selector:
+            boolean:
+        backlight_brightness:
+          name: Backlight brightness
+          default: 100
+          selector:
+            number:
+              min: 0
+              max: 100
+              unit_of_measurement: "%"
+              mode: slider
+        footer_enabled:
+          name: Enable footer updates
+          description: Sends footer content on setup and updates it once per minute. Entity footer fields also update when the selected entity changes.
+          default: false
+          selector:
+            boolean:
+        footer_left_mode:
+          name: Footer left content
+          default: date
+          selector:
+            select:
+              options:
+                - empty
+                - name
+                - date
+                - time
+                - entity
+        footer_left_name:
+          name: Footer left name
+          default: ""
+          selector:
+            text:
+        footer_left_entity:
+          name: Footer left entity
+          default: ""
+          selector:
+            entity:
+        footer_center_mode:
+          name: Footer center content
+          default: empty
+          selector:
+            select:
+              options:
+                - empty
+                - name
+                - date
+                - time
+                - entity
+        footer_center_name:
+          name: Footer center name
+          default: ""
+          selector:
+            text:
+        footer_center_entity:
+          name: Footer center entity
+          default: ""
+          selector:
+            entity:
+        footer_right_mode:
+          name: Footer right content
+          default: time
+          selector:
+            select:
+              options:
+                - empty
+                - name
+                - date
+                - time
+                - entity
+        footer_right_name:
+          name: Footer right name
+          default: ""
+          selector:
+            text:
+        footer_right_entity:
+          name: Footer right entity
+          default: ""
+          selector:
+            entity:
     page_1:
       name: Page 1 tiles
       description: Configure up to 6 tiles for page 1. Leave empty to skip.
@@ -304,6 +407,20 @@ variables:
   page_5_label: !input page_5_label
   thermostat_use_area_name: !input thermostat_use_area_name
   temperature_sensor_use_area_name: !input temperature_sensor_use_area_name
+  display_timeout_enabled: !input display_timeout_enabled
+  display_timeout_seconds: !input display_timeout_seconds
+  backlight_enabled: !input backlight_enabled
+  backlight_brightness: !input backlight_brightness
+  footer_enabled: !input footer_enabled
+  footer_left_mode: !input footer_left_mode
+  footer_left_name: !input footer_left_name
+  footer_left_entity: !input footer_left_entity
+  footer_center_mode: !input footer_center_mode
+  footer_center_name: !input footer_center_name
+  footer_center_entity: !input footer_center_entity
+  footer_right_mode: !input footer_right_mode
+  footer_right_name: !input footer_right_name
+  footer_right_entity: !input footer_right_entity
   page_1_enabled: !input page_1_enabled
   page_2_enabled: !input page_2_enabled
   page_3_enabled: !input page_3_enabled
@@ -425,6 +542,59 @@ variables:
       {% endif %}
     {% endfor %}
     {{ ns.items }}
+  footer_payload: >-
+    {%- macro clean(value) -%}
+      {{- (value | string
+        | replace('Ä', 'Ae')
+        | replace('Ö', 'Oe')
+        | replace('Ü', 'Ue')
+        | replace('ä', 'ae')
+        | replace('ö', 'oe')
+        | replace('ü', 'ue')
+        | replace('ß', 'ss')) -}}
+    {%- endmacro -%}
+    {%- macro entity_value(entity) -%}
+      {%- if entity and entity != '' -%}
+        {%- set raw_value = states(entity) -%}
+        {%- if raw_value in ['unknown', 'unavailable'] -%}
+          {{- '' -}}
+        {%- elif is_number(raw_value) -%}
+          {%- set rounded_value = raw_value | float(0) | round(2) -%}
+          {%- set value_text = ((rounded_value | int) | string) if rounded_value == (rounded_value | int) else (rounded_value | string) -%}
+          {%- set units = state_attr(entity, 'unit_of_measurement') or '' -%}
+          {{- value_text ~ units -}}
+        {%- else -%}
+          {{- clean(raw_value) -}}
+        {%- endif -%}
+      {%- else -%}
+        {{- '' -}}
+      {%- endif -%}
+    {%- endmacro -%}
+    {%- macro footer_value(mode, name, entity) -%}
+      {%- if mode == 'name' -%}
+        {{- clean(name) -}}
+      {%- elif mode == 'date' -%}
+        {{- now().strftime('%a %d %b') -}}
+      {%- elif mode == 'time' -%}
+        {{- now().strftime('%H:%M') -}}
+      {%- elif mode == 'entity' -%}
+        {{- entity_value(entity) -}}
+      {%- else -%}
+        {{- '' -}}
+      {%- endif -%}
+    {%- endmacro -%}
+    {%- set footer = {
+      'left': footer_value(footer_left_mode, footer_left_name, footer_left_entity),
+      'center': footer_value(footer_center_mode, footer_center_name, footer_center_entity),
+      'right': footer_value(footer_right_mode, footer_right_name, footer_right_entity)
+    } -%}
+    {%- set ns = namespace(screens=[]) -%}
+    {%- for screen in range(1, 6) -%}
+      {%- if page_enabled_map.get(screen, page_enabled_map.get(screen | string, false)) -%}
+        {%- set ns.screens = ns.screens + [{'screen': screen, 'footer': footer}] -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {{- {'screens': ns.screens} | to_json(ensure_ascii=False) -}}
 
 triggers:
   - trigger: homeassistant
@@ -439,6 +609,24 @@ triggers:
   - trigger: mqtt
     topic: "{{ oxrs_prefix }}/stat/{{ device_client_id }}"
     id: panel_stat
+  - trigger: time_pattern
+    minutes: "/1"
+    id: footer_update
+  - trigger: event
+    event_type: state_changed
+    id: footer_update
+    event_data:
+      entity_id: !input footer_left_entity
+  - trigger: event
+    event_type: state_changed
+    id: footer_update
+    event_data:
+      entity_id: !input footer_center_entity
+  - trigger: event
+    event_type: state_changed
+    id: footer_update
+    event_data:
+      entity_id: !input footer_right_entity
   - trigger: event
     event_type: state_changed
     id: entity_state_changed
@@ -747,6 +935,26 @@ actions:
             value_template: >-
               {{ trigger.id in ['ha_start', 'panel_lwt', 'automation_reloaded'] }}
         sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ display_timeout_enabled }}"
+                sequence:
+                  - action: mqtt.publish
+                    data:
+                      topic: "oxrs/cmnd/{{ device_client_id }}"
+                      payload: >-
+                        {{ {'noActivitySecondsToSleep': display_timeout_seconds | int(60)} | to_json(ensure_ascii=False) }}
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ backlight_enabled }}"
+                sequence:
+                  - action: mqtt.publish
+                    data:
+                      topic: "oxrs/cmnd/{{ device_client_id }}"
+                      payload: >-
+                        {{ {'backlight': {'brightness': backlight_brightness | int(100)}} | to_json(ensure_ascii=False) }}
           - action: mqtt.publish
             data:
               topic: "oxrs/conf/{{ device_client_id }}"
@@ -837,6 +1045,15 @@ actions:
                   {% endif %}
                 {% endfor %}
                 {{ {'screens': ns.screens} | to_json(ensure_ascii=False) }}
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ footer_enabled }}"
+                sequence:
+                  - action: mqtt.publish
+                    data:
+                      topic: "oxrs/cmnd/{{ device_client_id }}"
+                      payload: "{{ footer_payload }}"
           - action: mqtt.publish
             data:
               topic: "oxrs/cmnd/{{ device_client_id }}"
@@ -1000,6 +1217,14 @@ actions:
                         {% set tile_update.value = {'screen': repeat.item.screen, 'tile': repeat.item.tile, 'state': 'on' if is_state(entity, 'on') else 'off', 'subLabel': ''} %}
                       {% endif %}
                       {{ {'tiles': [tile_update.value]} | to_json(ensure_ascii=False) }}
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.id == 'footer_update' and footer_enabled }}"
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "oxrs/cmnd/{{ device_client_id }}"
+              payload: "{{ footer_payload }}"
       - conditions:
           - condition: template
             value_template: "{{ trigger.id == 'panel_stat' and trigger.payload_json.type == 'screen' and trigger.payload_json.state == 'loaded' }}"
