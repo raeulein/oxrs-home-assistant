@@ -940,15 +940,12 @@ actions:
                             target:
                               entity_id: "{{ matched_entity }}"
                     default:
-                      - action: climate.turn_on
-                        continue_on_error: true
+                      - action: climate.set_temperature
                         target:
                           entity_id: "{{ matched_entity }}"
-                  - action: climate.set_temperature
-                    target:
-                      entity_id: "{{ matched_entity }}"
-                    data:
-                      temperature: "{{ target_temperature }}"
+                        data:
+                          temperature: "{{ target_temperature }}"
+                          hvac_mode: heat
           - choose:
               - conditions:
                   - condition: template
