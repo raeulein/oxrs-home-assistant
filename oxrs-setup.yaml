@@ -442,6 +442,303 @@ triggers:
   - trigger: event
     event_type: state_changed
     id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_1_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_1_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_2_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_2_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_3_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_3_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_4_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_4_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_5_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_5_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_6_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_1_tile_6_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_1_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_1_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_2_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_2_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_3_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_3_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_4_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_4_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_5_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_5_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_6_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_2_tile_6_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_1_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_1_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_2_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_2_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_3_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_3_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_4_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_4_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_5_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_5_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_6_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_3_tile_6_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_1_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_1_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_2_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_2_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_3_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_3_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_4_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_4_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_5_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_5_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_6_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_4_tile_6_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_1_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_1_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_2_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_2_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_3_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_3_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_4_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_4_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_5_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_5_secondary_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_6_entity
+  - trigger: event
+    event_type: state_changed
+    id: entity_state_changed
+    event_data:
+      entity_id: !input page_5_tile_6_secondary_entity
 
 actions:
   - choose:
