@@ -52,42 +52,6 @@ blueprint:
           default: false
           selector:
             boolean:
-    secondary_sensors:
-      name: Secondary sensor values
-      description: Optional second sensor per tile. Used only when both the tile entity and this entity are sensors.
-      icon: mdi:counter
-      collapsed: true
-      input:
-        page_1_tile_1_secondary_entity: { name: Page 1 tile 1 secondary sensor, default: "", selector: { entity: {} } }
-        page_1_tile_2_secondary_entity: { name: Page 1 tile 2 secondary sensor, default: "", selector: { entity: {} } }
-        page_1_tile_3_secondary_entity: { name: Page 1 tile 3 secondary sensor, default: "", selector: { entity: {} } }
-        page_1_tile_4_secondary_entity: { name: Page 1 tile 4 secondary sensor, default: "", selector: { entity: {} } }
-        page_1_tile_5_secondary_entity: { name: Page 1 tile 5 secondary sensor, default: "", selector: { entity: {} } }
-        page_1_tile_6_secondary_entity: { name: Page 1 tile 6 secondary sensor, default: "", selector: { entity: {} } }
-        page_2_tile_1_secondary_entity: { name: Page 2 tile 1 secondary sensor, default: "", selector: { entity: {} } }
-        page_2_tile_2_secondary_entity: { name: Page 2 tile 2 secondary sensor, default: "", selector: { entity: {} } }
-        page_2_tile_3_secondary_entity: { name: Page 2 tile 3 secondary sensor, default: "", selector: { entity: {} } }
-        page_2_tile_4_secondary_entity: { name: Page 2 tile 4 secondary sensor, default: "", selector: { entity: {} } }
-        page_2_tile_5_secondary_entity: { name: Page 2 tile 5 secondary sensor, default: "", selector: { entity: {} } }
-        page_2_tile_6_secondary_entity: { name: Page 2 tile 6 secondary sensor, default: "", selector: { entity: {} } }
-        page_3_tile_1_secondary_entity: { name: Page 3 tile 1 secondary sensor, default: "", selector: { entity: {} } }
-        page_3_tile_2_secondary_entity: { name: Page 3 tile 2 secondary sensor, default: "", selector: { entity: {} } }
-        page_3_tile_3_secondary_entity: { name: Page 3 tile 3 secondary sensor, default: "", selector: { entity: {} } }
-        page_3_tile_4_secondary_entity: { name: Page 3 tile 4 secondary sensor, default: "", selector: { entity: {} } }
-        page_3_tile_5_secondary_entity: { name: Page 3 tile 5 secondary sensor, default: "", selector: { entity: {} } }
-        page_3_tile_6_secondary_entity: { name: Page 3 tile 6 secondary sensor, default: "", selector: { entity: {} } }
-        page_4_tile_1_secondary_entity: { name: Page 4 tile 1 secondary sensor, default: "", selector: { entity: {} } }
-        page_4_tile_2_secondary_entity: { name: Page 4 tile 2 secondary sensor, default: "", selector: { entity: {} } }
-        page_4_tile_3_secondary_entity: { name: Page 4 tile 3 secondary sensor, default: "", selector: { entity: {} } }
-        page_4_tile_4_secondary_entity: { name: Page 4 tile 4 secondary sensor, default: "", selector: { entity: {} } }
-        page_4_tile_5_secondary_entity: { name: Page 4 tile 5 secondary sensor, default: "", selector: { entity: {} } }
-        page_4_tile_6_secondary_entity: { name: Page 4 tile 6 secondary sensor, default: "", selector: { entity: {} } }
-        page_5_tile_1_secondary_entity: { name: Page 5 tile 1 secondary sensor, default: "", selector: { entity: {} } }
-        page_5_tile_2_secondary_entity: { name: Page 5 tile 2 secondary sensor, default: "", selector: { entity: {} } }
-        page_5_tile_3_secondary_entity: { name: Page 5 tile 3 secondary sensor, default: "", selector: { entity: {} } }
-        page_5_tile_4_secondary_entity: { name: Page 5 tile 4 secondary sensor, default: "", selector: { entity: {} } }
-        page_5_tile_5_secondary_entity: { name: Page 5 tile 5 secondary sensor, default: "", selector: { entity: {} } }
-        page_5_tile_6_secondary_entity: { name: Page 5 tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_1:
       name: Page 1 tiles
       description: Configure up to 6 tiles for page 1. Leave empty to skip.
@@ -104,31 +68,37 @@ blueprint:
           default: ""
           selector:
             entity:
+        page_1_tile_1_secondary_entity: { name: Tile 1 secondary sensor, default: "", selector: { entity: {} } }
         page_1_tile_2_entity:
           name: Tile 2 entity
           default: ""
           selector:
             entity:
+        page_1_tile_2_secondary_entity: { name: Tile 2 secondary sensor, default: "", selector: { entity: {} } }
         page_1_tile_3_entity:
           name: Tile 3 entity
           default: ""
           selector:
             entity:
+        page_1_tile_3_secondary_entity: { name: Tile 3 secondary sensor, default: "", selector: { entity: {} } }
         page_1_tile_4_entity:
           name: Tile 4 entity
           default: ""
           selector:
             entity:
+        page_1_tile_4_secondary_entity: { name: Tile 4 secondary sensor, default: "", selector: { entity: {} } }
         page_1_tile_5_entity:
           name: Tile 5 entity
           default: ""
           selector:
             entity:
+        page_1_tile_5_secondary_entity: { name: Tile 5 secondary sensor, default: "", selector: { entity: {} } }
         page_1_tile_6_entity:
           name: Tile 6 entity
           default: ""
           selector:
             entity:
+        page_1_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_2:
       name: Page 2 tiles
       description: Configure up to 6 tiles for page 2. Leave empty to skip.
@@ -145,31 +115,37 @@ blueprint:
           default: ""
           selector:
             entity:
+        page_2_tile_1_secondary_entity: { name: Tile 1 secondary sensor, default: "", selector: { entity: {} } }
         page_2_tile_2_entity:
           name: Tile 2 entity
           default: ""
           selector:
             entity:
+        page_2_tile_2_secondary_entity: { name: Tile 2 secondary sensor, default: "", selector: { entity: {} } }
         page_2_tile_3_entity:
           name: Tile 3 entity
           default: ""
           selector:
             entity:
+        page_2_tile_3_secondary_entity: { name: Tile 3 secondary sensor, default: "", selector: { entity: {} } }
         page_2_tile_4_entity:
           name: Tile 4 entity
           default: ""
           selector:
             entity:
+        page_2_tile_4_secondary_entity: { name: Tile 4 secondary sensor, default: "", selector: { entity: {} } }
         page_2_tile_5_entity:
           name: Tile 5 entity
           default: ""
           selector:
             entity:
+        page_2_tile_5_secondary_entity: { name: Tile 5 secondary sensor, default: "", selector: { entity: {} } }
         page_2_tile_6_entity:
           name: Tile 6 entity
           default: ""
           selector:
             entity:
+        page_2_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_3:
       name: Page 3 tiles
       description: Configure up to 6 tiles for page 3. Leave empty to skip.
@@ -186,31 +162,37 @@ blueprint:
           default: ""
           selector:
             entity:
+        page_3_tile_1_secondary_entity: { name: Tile 1 secondary sensor, default: "", selector: { entity: {} } }
         page_3_tile_2_entity:
           name: Tile 2 entity
           default: ""
           selector:
             entity:
+        page_3_tile_2_secondary_entity: { name: Tile 2 secondary sensor, default: "", selector: { entity: {} } }
         page_3_tile_3_entity:
           name: Tile 3 entity
           default: ""
           selector:
             entity:
+        page_3_tile_3_secondary_entity: { name: Tile 3 secondary sensor, default: "", selector: { entity: {} } }
         page_3_tile_4_entity:
           name: Tile 4 entity
           default: ""
           selector:
             entity:
+        page_3_tile_4_secondary_entity: { name: Tile 4 secondary sensor, default: "", selector: { entity: {} } }
         page_3_tile_5_entity:
           name: Tile 5 entity
           default: ""
           selector:
             entity:
+        page_3_tile_5_secondary_entity: { name: Tile 5 secondary sensor, default: "", selector: { entity: {} } }
         page_3_tile_6_entity:
           name: Tile 6 entity
           default: ""
           selector:
             entity:
+        page_3_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_4:
       name: Page 4 tiles
       description: Configure up to 6 tiles for page 4. Leave empty to skip.
@@ -227,31 +209,37 @@ blueprint:
           default: ""
           selector:
             entity:
+        page_4_tile_1_secondary_entity: { name: Tile 1 secondary sensor, default: "", selector: { entity: {} } }
         page_4_tile_2_entity:
           name: Tile 2 entity
           default: ""
           selector:
             entity:
+        page_4_tile_2_secondary_entity: { name: Tile 2 secondary sensor, default: "", selector: { entity: {} } }
         page_4_tile_3_entity:
           name: Tile 3 entity
           default: ""
           selector:
             entity:
+        page_4_tile_3_secondary_entity: { name: Tile 3 secondary sensor, default: "", selector: { entity: {} } }
         page_4_tile_4_entity:
           name: Tile 4 entity
           default: ""
           selector:
             entity:
+        page_4_tile_4_secondary_entity: { name: Tile 4 secondary sensor, default: "", selector: { entity: {} } }
         page_4_tile_5_entity:
           name: Tile 5 entity
           default: ""
           selector:
             entity:
+        page_4_tile_5_secondary_entity: { name: Tile 5 secondary sensor, default: "", selector: { entity: {} } }
         page_4_tile_6_entity:
           name: Tile 6 entity
           default: ""
           selector:
             entity:
+        page_4_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_5:
       name: Page 5 tiles
       description: Configure up to 6 tiles for page 5. Leave empty to skip.
@@ -268,31 +256,37 @@ blueprint:
           default: ""
           selector:
             entity:
+        page_5_tile_1_secondary_entity: { name: Tile 1 secondary sensor, default: "", selector: { entity: {} } }
         page_5_tile_2_entity:
           name: Tile 2 entity
           default: ""
           selector:
             entity:
+        page_5_tile_2_secondary_entity: { name: Tile 2 secondary sensor, default: "", selector: { entity: {} } }
         page_5_tile_3_entity:
           name: Tile 3 entity
           default: ""
           selector:
             entity:
+        page_5_tile_3_secondary_entity: { name: Tile 3 secondary sensor, default: "", selector: { entity: {} } }
         page_5_tile_4_entity:
           name: Tile 4 entity
           default: ""
           selector:
             entity:
+        page_5_tile_4_secondary_entity: { name: Tile 4 secondary sensor, default: "", selector: { entity: {} } }
         page_5_tile_5_entity:
           name: Tile 5 entity
           default: ""
           selector:
             entity:
+        page_5_tile_5_secondary_entity: { name: Tile 5 secondary sensor, default: "", selector: { entity: {} } }
         page_5_tile_6_entity:
           name: Tile 6 entity
           default: ""
           selector:
             entity:
+        page_5_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
 
 mode: queued
 max: 10
@@ -612,14 +606,14 @@ actions:
                         {% set current_temp = state_attr(entity, 'current_temperature') %}
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
-                        {% set target_units = '°C' if target_temp is not none else '' %}
+                        {% set target_units = '°C' if target_temp is not none and not is_state(entity, 'off') else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set mode = 1 if is_state(entity, 'off') else 2 %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
                           'number': {
-                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
                             'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
                             'subUnits': current_units
@@ -762,14 +756,14 @@ actions:
                         {% set current_temp = state_attr(entity, 'current_temperature') %}
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
-                        {% set target_units = '°C' if target_temp is not none else '' %}
+                        {% set target_units = '°C' if target_temp is not none and not is_state(entity, 'off') else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {% set mode = 1 if is_state(entity, 'off') else 2 %}
                         {% set tile_update.value = {
                           'screen': repeat.item.screen,
                           'tile': repeat.item.tile,
                           'number': {
-                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
                             'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
                             'subUnits': current_units
@@ -1120,13 +1114,13 @@ actions:
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
                         {% set mode = thermostat_mode if thermostat_mode is defined else 1 if is_state(matched_entity, 'off') else 2 %}
                         {% set mode = 1 if (mode | int(1)) in [0, 1] else 2 %}
-                        {% set target_units = '°C' if target_temp is not none else '' %}
+                        {% set target_units = '°C' if target_temp is not none and mode != 1 else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
                           'number': {
-                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
                             'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
                             'subUnits': current_units
@@ -1310,13 +1304,13 @@ actions:
                         {% set target_value = ((target_temp * 10) | int(0)) if target_temp is not none else 200 %}
                         {% set current_value = ((current_temp * 10) | int(0)) if current_temp is not none else target_value %}
                         {% set mode = 1 if changed_state == 'off' else 2 %}
-                        {% set target_units = '°C' if target_temp is not none else '' %}
+                        {% set target_units = '°C' if target_temp is not none and mode != 1 else '' %}
                         {% set current_units = '°C' if current_temp is not none else '' %}
                         {{ {'tiles': [{
                           'screen': event_screen,
                           'tile': event_tile,
                           'number': {
-                            'value': (target_temp | round(1) | string) if target_temp is not none else '',
+                            'value': (target_temp | round(1) | string) if target_temp is not none and mode != 1 else '',
                             'units': target_units,
                             'subValue': (current_temp | round(1) | string) if current_temp is not none else '',
                             'subUnits': current_units
