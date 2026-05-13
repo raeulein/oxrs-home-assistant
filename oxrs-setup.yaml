@@ -103,12 +103,18 @@ blueprint:
           default: date
           selector:
             select:
+              mode: dropdown
               options:
-                - empty
-                - name
-                - date
-                - time
-                - entity
+                - label: Empty
+                  value: empty
+                - label: Page name
+                  value: name
+                - label: Date
+                  value: date
+                - label: Time
+                  value: time
+                - label: Entity value
+                  value: entity
         footer_left_entity:
           name: Footer left entity
           default: ""
@@ -119,12 +125,18 @@ blueprint:
           default: empty
           selector:
             select:
+              mode: dropdown
               options:
-                - empty
-                - name
-                - date
-                - time
-                - entity
+                - label: Empty
+                  value: empty
+                - label: Page name
+                  value: name
+                - label: Date
+                  value: date
+                - label: Time
+                  value: time
+                - label: Entity value
+                  value: entity
         footer_center_entity:
           name: Footer center entity
           default: ""
@@ -135,12 +147,18 @@ blueprint:
           default: time
           selector:
             select:
+              mode: dropdown
               options:
-                - empty
-                - name
-                - date
-                - time
-                - entity
+                - label: Empty
+                  value: empty
+                - label: Page name
+                  value: name
+                - label: Date
+                  value: date
+                - label: Time
+                  value: time
+                - label: Entity value
+                  value: entity
         footer_right_entity:
           name: Footer right entity
           default: ""
