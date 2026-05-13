@@ -7,37 +7,13 @@ blueprint:
   input:
     common:
       name: Common
+      collapsed: true
       icon: mdi:lan-connect
       input:
         device_client_id:
           name: MQTT device client id
           description: The OXRS device client id used in conf/<id>, cmnd/<id>, and stat/<id>.
           default: oxrs-01
-          selector:
-            text:
-        page_1_label:
-          name: Page 1 label
-          default: Home
-          selector:
-            text:
-        page_2_label:
-          name: Page 2 label
-          default: Page 2
-          selector:
-            text:
-        page_3_label:
-          name: Page 3 label
-          default: Page 3
-          selector:
-            text:
-        page_4_label:
-          name: Page 4 label
-          default: Page 4
-          selector:
-            text:
-        page_5_label:
-          name: Page 5 label
-          default: Page 5
           selector:
             text:
         thermostat_use_area_name:
@@ -165,11 +141,16 @@ blueprint:
           selector:
             entity:
     page_1:
-      name: Page 1 tiles
+      name: Page 1
       description: Configure up to 6 tiles for page 1. Leave empty to skip.
       icon: mdi:numeric-1-box-multiple-outline
       collapsed: true
       input:
+        page_1_label:
+          name: Page 1 label
+          default: Home
+          selector:
+            text:
         page_1_enabled:
           name: Enable page 1
           default: true
@@ -212,11 +193,16 @@ blueprint:
             entity:
         page_1_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_2:
-      name: Page 2 tiles
+      name: Page 2
       description: Configure up to 6 tiles for page 2. Leave empty to skip.
       icon: mdi:numeric-2-box-multiple-outline
       collapsed: true
       input:
+        page_2_label:
+          name: Page 2 label
+          default: Page 2
+          selector:
+            text:
         page_2_enabled:
           name: Enable page 2
           default: false
@@ -259,11 +245,16 @@ blueprint:
             entity:
         page_2_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_3:
-      name: Page 3 tiles
+      name: Page 3
       description: Configure up to 6 tiles for page 3. Leave empty to skip.
       icon: mdi:numeric-3-box-multiple-outline
       collapsed: true
       input:
+        page_3_label:
+          name: Page 3 label
+          default: Page 3
+          selector:
+            text:
         page_3_enabled:
           name: Enable page 3
           default: false
@@ -311,6 +302,11 @@ blueprint:
       icon: mdi:numeric-4-box-multiple-outline
       collapsed: true
       input:
+        page_4_label:
+          name: Page 4 label
+          default: Page 4
+          selector:
+            text:
         page_4_enabled:
           name: Enable page 4
           default: false
@@ -353,11 +349,16 @@ blueprint:
             entity:
         page_4_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_5:
-      name: Page 5 tiles
+      name: Page 5
       description: Configure up to 6 tiles for page 5. Leave empty to skip.
       icon: mdi:numeric-5-box-multiple-outline
       collapsed: true
       input:
+        page_5_label:
+          name: Page 5 label
+          default: Page 5
+          selector:
+            text:
         page_5_enabled:
           name: Enable page 5
           default: false
