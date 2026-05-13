@@ -92,6 +92,12 @@ blueprint:
           default: false
           selector:
             boolean:
+        date_format:
+          name: Date format
+          description: Format for date display in footer. Use Python strftime format (e.g. %d.%m.%Y for 13.05.2026).
+          default: "%a %d %b"
+          selector:
+            text:
         footer_left_mode:
           name: Footer left content
           default: date
@@ -103,11 +109,6 @@ blueprint:
                 - date
                 - time
                 - entity
-        footer_left_name:
-          name: Footer left name
-          default: ""
-          selector:
-            text:
         footer_left_entity:
           name: Footer left entity
           default: ""
@@ -124,11 +125,6 @@ blueprint:
                 - date
                 - time
                 - entity
-        footer_center_name:
-          name: Footer center name
-          default: ""
-          selector:
-            text:
         footer_center_entity:
           name: Footer center entity
           default: ""
@@ -145,11 +141,6 @@ blueprint:
                 - date
                 - time
                 - entity
-        footer_right_name:
-          name: Footer right name
-          default: ""
-          selector:
-            text:
         footer_right_entity:
           name: Footer right entity
           default: ""
@@ -412,14 +403,12 @@ variables:
   backlight_enabled: !input backlight_enabled
   backlight_brightness: !input backlight_brightness
   footer_enabled: !input footer_enabled
+  date_format: !input date_format
   footer_left_mode: !input footer_left_mode
-  footer_left_name: !input footer_left_name
   footer_left_entity: !input footer_left_entity
   footer_center_mode: !input footer_center_mode
-  footer_center_name: !input footer_center_name
   footer_center_entity: !input footer_center_entity
   footer_right_mode: !input footer_right_mode
-  footer_right_name: !input footer_right_name
   footer_right_entity: !input footer_right_entity
   page_1_enabled: !input page_1_enabled
   page_2_enabled: !input page_2_enabled
@@ -570,11 +559,11 @@ variables:
         {{- '' -}}
       {%- endif -%}
     {%- endmacro -%}
-    {%- macro footer_value(mode, name, entity) -%}
+    {%- macro footer_value(mode, screen, entity, date_fmt) -%}
       {%- if mode == 'name' -%}
-        {{- clean(name) -}}
+        {{- clean(page_labels.get(screen, 'Page ' ~ screen) | string) -}}
       {%- elif mode == 'date' -%}
-        {{- now().strftime('%a %d %b') -}}
+        {{- now().strftime(date_fmt) -}}
       {%- elif mode == 'time' -%}
         {{- now().strftime('%H:%M') -}}
       {%- elif mode == 'entity' -%}
@@ -583,14 +572,14 @@ variables:
         {{- '' -}}
       {%- endif -%}
     {%- endmacro -%}
-    {%- set footer = {
-      'left': footer_value(footer_left_mode, footer_left_name, footer_left_entity),
-      'center': footer_value(footer_center_mode, footer_center_name, footer_center_entity),
-      'right': footer_value(footer_right_mode, footer_right_name, footer_right_entity)
-    } -%}
     {%- set ns = namespace(screens=[]) -%}
     {%- for screen in range(1, 6) -%}
       {%- if page_enabled_map.get(screen, page_enabled_map.get(screen | string, false)) -%}
+        {%- set footer = {
+          'left': footer_value(footer_left_mode, screen, footer_left_entity, date_format),
+          'center': footer_value(footer_center_mode, screen, footer_center_entity, date_format),
+          'right': footer_value(footer_right_mode, screen, footer_right_entity, date_format)
+        } -%}
         {%- set ns.screens = ns.screens + [{'screen': screen, 'footer': footer}] -%}
       {%- endif -%}
     {%- endfor -%}
@@ -1220,6 +1209,14 @@ actions:
       - conditions:
           - condition: template
             value_template: "{{ trigger.id == 'footer_update' and footer_enabled }}"
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "oxrs/cmnd/{{ device_client_id }}"
+              payload: "{{ footer_payload }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.id == 'panel_stat' and trigger.payload_json.type == 'screen' and trigger.payload_json.event == 'change' and footer_enabled }}"
         sequence:
           - action: mqtt.publish
             data:
