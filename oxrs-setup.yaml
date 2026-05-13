@@ -1779,7 +1779,13 @@ actions:
                     data:
                       topic: "oxrs/cmnd/{{ device_client_id }}"
                       payload: >-
-                        {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off', 'subLabel': ''}]} | to_json(ensure_ascii=False) }}
+                          {%- if matched_domain == 'light' -%}
+                            {%- set brightness = state_attr(matched_entity, 'brightness') or 0 -%}
+                            {%- set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) -%}
+                            {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off', 'level': brightness_pct, 'subLabel': ''}]} | to_json(ensure_ascii=False) }}
+                          {%- else -%}
+                            {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off', 'subLabel': ''}]} | to_json(ensure_ascii=False) }}
+                          {%- endif -%}
       - conditions:
           - condition: template
             value_template: "{{ trigger.id == 'entity_state_changed' }}"
