@@ -1768,8 +1768,7 @@ actions:
                           {% endif %}
                           {{ {'tiles': [tile_update]} | to_json(ensure_ascii=False) }}
                         {% else %}
-                          {% set brightness_pct = ((brightness * 100 / 255) | round(0)) | int(0) %}
-                          {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off', 'level': brightness_pct, 'subLabel': ''}]} | to_json(ensure_ascii=False) }}
+                          {{ {'tiles': [{'screen': event_screen, 'tile': event_tile, 'state': 'on' if is_state(matched_entity, 'on') else 'off', 'subLabel': ''}]} | to_json(ensure_ascii=False) }}
                         {% endif %}
               - conditions:
                   - condition: template
