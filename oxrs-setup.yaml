@@ -1979,7 +1979,7 @@ actions:
                         {% endif %}
               - conditions:
                   - condition: template
-                    value_template: "{{ changed_domain in ['light', 'switch', 'input_boolean', 'fan', 'scene', 'script', 'button'] }}"
+                    value_template: "{{ changed_domain in ['switch', 'input_boolean', 'fan', 'scene', 'script', 'button'] }}"
                 sequence:
                   - action: mqtt.publish
                     data:
