@@ -297,7 +297,7 @@ blueprint:
             entity:
         page_3_tile_6_secondary_entity: { name: Tile 6 secondary sensor, default: "", selector: { entity: {} } }
     page_4:
-      name: Page 4 tiles
+      name: Page 4
       description: Configure up to 6 tiles for page 4. Leave empty to skip.
       icon: mdi:numeric-4-box-multiple-outline
       collapsed: true
